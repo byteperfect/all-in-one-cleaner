@@ -100,8 +100,8 @@ EOA;
 	/**
 	 * Add tab with fields.
 	 *
-	 * @param string $tab_name Tab name.
-	 * @param array  $fields   Fields.
+	 * @param string       $tab_name Tab name.
+	 * @param array<Field> $fields   Fields.
 	 *
 	 * @return void
 	 */

@@ -1,0 +1,34 @@
+{
+  "type": "wordpress-plugin",
+  "name": "byteperfect/all-in-one-cleaner",
+  "description": "The plugin allows you to clean up your WordPress site.",
+  "minimum-stability": "stable",
+  "authors": [
+    {
+      "name": "Aleksandr Levashov",
+      "email": "aleksandr@byteperfect.dev",
+      "homepage": "https://byteperfect.dev/",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "ext-curl": "*",
+    "byteperfect/wp-background-processing": "@stable",
+    "htmlburger/carbon-fields": "^v3.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "all_in_one_cleaner\\": "src"
+    }
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/byteperfectdev/wp-background-processing"
+    }
+  ],
+  "config": {
+    "optimize-autoloader": true,
+    "sort-packages": true
+  }
+}

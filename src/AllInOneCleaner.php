@@ -9,6 +9,9 @@ declare( strict_types=1 );
 
 namespace all_in_one_cleaner;
 
+use all_in_one_cleaner\modules\AbstractModule;
+use all_in_one_cleaner\modules\Core;
+
 /**
  * Class AllInOneCleaner.
  *
@@ -44,6 +47,10 @@ class AllInOneCleaner {
 		if ( true !== $initialized ) {
 			$this->get_settings()->initialize();
 
+			foreach ( $this->get_modules() as $module ) {
+				$module->initialize();
+			}
+
 			$initialized = true;
 		}
 	}
@@ -61,5 +68,22 @@ class AllInOneCleaner {
 		}
 
 		return $settings;
+	}
+
+	/**
+	 * Get list modules.
+	 *
+	 * @return array<AbstractModule>
+	 */
+	public function get_modules(): array {
+		static $modules;
+
+		if ( is_null( $modules ) ) {
+			$modules = array(
+				new Core(),
+			);
+		}
+
+		return $modules;
 	}
 }

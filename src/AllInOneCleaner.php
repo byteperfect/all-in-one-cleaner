@@ -42,7 +42,24 @@ class AllInOneCleaner {
 		static $initialized;
 
 		if ( true !== $initialized ) {
+			$this->get_settings()->initialize();
+
 			$initialized = true;
 		}
+	}
+
+	/**
+	 * Get settings.
+	 *
+	 * @return Settings
+	 */
+	public function get_settings(): Settings {
+		static $settings;
+
+		if ( is_null( $settings ) ) {
+			$settings = new Settings();
+		}
+
+		return $settings;
 	}
 }

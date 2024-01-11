@@ -45,14 +45,27 @@ class AllInOneCleaner {
 		static $initialized;
 
 		if ( true !== $initialized ) {
+			$this->register_hooks();
+
 			$this->get_settings()->initialize();
 
 			foreach ( $this->get_modules() as $module ) {
 				$module->initialize();
 			}
 
+			$this->get_handler();
+
 			$initialized = true;
 		}
+	}
+
+	/**
+	 * Register hooks.
+	 *
+	 * @return void
+	 */
+	protected function register_hooks() {
+		add_action( 'all_in_one_cleaner_on_save_fields', array( $this, 'dispatch_cleaner' ) );
 	}
 
 	/**
@@ -85,5 +98,38 @@ class AllInOneCleaner {
 		}
 
 		return $modules;
+	}
+
+	/**
+	 * Get handler.
+	 *
+	 * @return AllInOneCleanerHandler
+	 */
+	public function get_handler(): AllInOneCleanerHandler {
+		static $handler;
+
+		if ( is_null( $handler ) ) {
+			$handler = new AllInOneCleanerHandler();
+		}
+
+		return $handler;
+	}
+
+	/**
+	 * Dispatch cleaner.
+	 *
+	 * @return void
+	 */
+	public function dispatch_cleaner() {
+		$data = (array) apply_filters( 'all_in_one_cleaner_push_to_queue', array() );
+
+		if ( count( $data ) > 0 ) {
+			$this->get_handler()->data( $data );
+			$this->get_handler()->save();
+			$this->get_handler()->dispatch();
+		} else {
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( 'The cleaner has not been dispatched because the queue is empty.' );
+		}
 	}
 }

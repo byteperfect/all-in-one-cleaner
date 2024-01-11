@@ -66,12 +66,37 @@ class Core extends AbstractModule {
 	}
 
 	/**
-	 * Handle data deletion.
-	 *
-	 * @param Settings $settings Settings.
+	 * Register hooks.
 	 *
 	 * @return void
 	 */
-	public function handle( Settings $settings ): void {
+	protected function register_hooks() {
+		parent::register_hooks();
+
+		add_filter( 'all_in_one_cleaner_push_to_queue', array( $this, 'push_to_queue' ), - PHP_INT_MAX );
+		add_filter( 'all_in_one_cleaner_task', array( $this, 'task' ) );
+	}
+
+	/**
+	 * Set handler queue.
+	 *
+	 * @return string[]
+	 */
+	public function push_to_queue(): array {
+		return array(
+			'posts',
+			'options',
+		);
+	}
+
+	/**
+	 * Perform the task.
+	 *
+	 * @param mixed $item Queue item to iterate over.
+	 *
+	 * @return mixed
+	 */
+	public function task( $item ) {
+		return false;
 	}
 }

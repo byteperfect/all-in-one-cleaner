@@ -64,15 +64,6 @@ abstract class AbstractModule {
 	abstract public function register_settings_fields( Settings $settings ): void;
 
 	/**
-	 * Handle data deletion.
-	 *
-	 * @param Settings $settings Settings.
-	 *
-	 * @return void
-	 */
-	abstract public function handle( Settings $settings ): void;
-
-	/**
 	 * Get the slug of the plugin for which the module is registered.
 	 *
 	 * @return string

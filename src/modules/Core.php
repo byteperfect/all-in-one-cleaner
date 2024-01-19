@@ -10,6 +10,8 @@ declare( strict_types=1 );
 namespace all_in_one_cleaner\modules;
 
 use all_in_one_cleaner\Settings;
+use Exception;
+use stdClass;
 
 /**
  * Core Module.
@@ -75,6 +77,8 @@ class Core extends AbstractModule {
 
 		add_filter( 'all_in_one_cleaner_push_to_queue', array( $this, 'push_to_queue' ), - PHP_INT_MAX );
 		add_filter( 'all_in_one_cleaner_task', array( $this, 'task' ) );
+		add_action( 'all_in_one_cleaner_task_post', array( $this, 'task_post' ) );
+		add_action( 'all_in_one_cleaner_task_page', array( $this, 'task_page' ) );
 	}
 
 	/**
@@ -97,6 +101,158 @@ class Core extends AbstractModule {
 	 * @return mixed
 	 */
 	public function task( $item ) {
+		if ( is_string( $item ) ) {
+			if ( str_starts_with( $item, 'posts' ) ) {
+				$item = $this->clear_posts( $item );
+			} elseif ( str_starts_with( $item, 'options' ) ) {
+				$item = $this->clear_options( $item );
+			}
+		} else {
+			$item = false;
+		}
+
+		return $item;
+	}
+
+	/**
+	 * Clear posts table.
+	 *
+	 * @param string $item Queue item to iterate over.
+	 *
+	 * @return string|false
+	 */
+	protected function clear_posts( string $item ) {
+		$post_id = (int) substr( $item, 5 );
+
+		$parent_post = $this->get_post( $post_id );
+		if ( ! isset( $parent_post->ID ) ) {
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions
+			error_log( 'No posts found.' );
+
+			return false;
+		}
+
+		$child_posts = $this->get_child_posts( (int) $parent_post->ID );
+		foreach ( $child_posts as $child_post ) {
+			try {
+				do_action( 'all_in_one_cleaner_task_' . $child_post->post_type, $child_post->ID, $parent_post );
+			} catch ( Exception $exception ) {
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions
+				error_log( $exception->getMessage() );
+
+				break;
+			}
+		}
+
+		try {
+			do_action( 'all_in_one_cleaner_task_' . $parent_post->post_type, $parent_post->ID );
+		} catch ( Exception $exception ) {
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions
+			error_log( $exception->getMessage() );
+
+			return false;
+		}
+
+		return 'posts' . $parent_post->ID;
+	}
+
+	/**
+	 * Get post.
+	 *
+	 * @param int $post_id ID of the previously processed post.
+	 *
+	 * @return object
+	 */
+	protected function get_post( int $post_id ): object {
+		global $wpdb;
+
+		if ( 0 === $post_id ) {
+			$query = <<<EOQ
+SELECT ID, post_type
+FROM $wpdb->posts
+WHERE post_parent = 0
+ORDER BY ID DESC
+LIMIT 1;
+EOQ;
+		} else {
+			$query = <<<EOQ
+SELECT ID, post_type
+FROM $wpdb->posts
+WHERE post_parent = 0 AND ID < $post_id
+ORDER BY ID DESC
+LIMIT 1;
+EOQ;
+		}
+
+		// phpcs:ignore WordPress.DB
+		return (object) $wpdb->get_row( $query );
+	}
+
+	/**
+	 * Get child posts.
+	 *
+	 * @param int $parent_post_id Parent post ID.
+	 *
+	 * @return stdClass[]
+	 */
+	protected function get_child_posts( int $parent_post_id ): array {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB
+		$query = <<<EOQ
+SELECT ID, post_type
+FROM $wpdb->posts
+WHERE post_parent = $parent_post_id
+ORDER BY ID DESC;
+EOQ;
+
+		// phpcs:ignore WordPress.DB
+		return (array) $wpdb->get_results( $query );
+	}
+
+	/**
+	 * Clear options.
+	 *
+	 * @param string $item Queue item to iterate over.
+	 *
+	 * @return string|false
+	 */
+	protected function clear_options( string $item ) {
+		$option_name = $this->get_settings_field_prefix() . 'clear_options';
+		if ( all_in_one_cleaner()->get_settings()->get( $option_name ) ) {
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions
+			error_log( 'clear_options.' );
+		}
+
 		return false;
+	}
+
+	/**
+	 * Delete post.
+	 *
+	 * @param int $post_id Post ID.
+	 *
+	 * @return void
+	 */
+	public function task_post( int $post_id ): void {
+		$option_name = $this->get_settings_field_prefix() . 'delete_posts';
+
+		if ( all_in_one_cleaner()->get_settings()->get( $option_name ) ) {
+			// wp_delete_post( $post_id, true );
+		}
+	}
+
+	/**
+	 * Delete post.
+	 *
+	 * @param int $post_id Post ID.
+	 *
+	 * @return void
+	 */
+	public function task_page( int $post_id ): void {
+		$option_name = $this->get_settings_field_prefix() . 'delete_pages';
+		if ( all_in_one_cleaner()->get_settings()->get( $option_name ) ) {
+			// wp_delete_post( $post_id, true );
+		}
 	}
 }

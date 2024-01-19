@@ -8,19 +8,20 @@
     "packages": [
         {
             "name": "byteperfect/wp-background-processing",
-            "version": "v0.0.1",
+            "version": "0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/byteperfectdev/wp-background-processing.git",
-                "reference": "66ae87cfd060c1dece3bb90e5e37e05ff062cfe1"
+                "reference": "dbd2e9e832e3110f7a5d993bea9835f94463d6ca"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/byteperfectdev/wp-background-processing/zipball/66ae87cfd060c1dece3bb90e5e37e05ff062cfe1",
-                "reference": "66ae87cfd060c1dece3bb90e5e37e05ff062cfe1",
+                "url": "https://api.github.com/repos/byteperfectdev/wp-background-processing/zipball/dbd2e9e832e3110f7a5d993bea9835f94463d6ca",
+                "reference": "dbd2e9e832e3110f7a5d993bea9835f94463d6ca",
                 "shasum": ""
             },
             "require": {
+                "ext-json": "*",
                 "php": ">=7.4"
             },
             "require-dev": {
@@ -59,10 +60,10 @@
             ],
             "description": "WP Background Processing can be used to fire off non-blocking asynchronous requests or as a background processing tool, allowing you to queue tasks.",
             "support": {
-                "source": "https://github.com/byteperfectdev/wp-background-processing/tree/v0.0.1",
+                "source": "https://github.com/byteperfectdev/wp-background-processing/tree/v0.1.2",
                 "issues": "https://github.com/byteperfectdev/wp-background-processing/issues"
             },
-            "time": "2024-01-09T13:46:37+00:00"
+            "time": "2024-01-19T20:00:19+00:00"
         },
         {
             "name": "htmlburger/carbon-fields",

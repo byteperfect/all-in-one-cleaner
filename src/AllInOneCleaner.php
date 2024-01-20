@@ -20,6 +20,13 @@ use all_in_one_cleaner\modules\WCVendors;
  */
 class AllInOneCleaner {
 	/**
+	 * Whether the plugin has been initialized.
+	 *
+	 * @var bool
+	 */
+	protected bool $initialized = false;
+
+	/**
 	 * Get instance of AllInOneCleaner.
 	 *
 	 * @return AllInOneCleaner
@@ -43,9 +50,7 @@ class AllInOneCleaner {
 	 * @return void
 	 */
 	protected function initialize(): void {
-		static $initialized;
-
-		if ( true !== $initialized ) {
+		if ( true !== $this->initialized ) {
 			$this->register_hooks();
 
 			$this->get_settings()->initialize();
@@ -56,7 +61,7 @@ class AllInOneCleaner {
 
 			$this->get_handler();
 
-			$initialized = true;
+			$this->initialized = true;
 		}
 	}
 

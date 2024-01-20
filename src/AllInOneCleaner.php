@@ -11,6 +11,7 @@ namespace all_in_one_cleaner;
 
 use all_in_one_cleaner\modules\AbstractModule;
 use all_in_one_cleaner\modules\Core;
+use all_in_one_cleaner\modules\WCVendors;
 
 /**
  * Class AllInOneCleaner.
@@ -93,7 +94,8 @@ class AllInOneCleaner {
 
 		if ( is_null( $modules ) ) {
 			$modules = array(
-				new Core(),
+				'Core'      => new Core(),
+				'WCVendors' => new WCVendors(),
 			);
 		}
 

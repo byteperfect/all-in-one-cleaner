@@ -18,17 +18,22 @@ use all_in_one_cleaner\Settings;
  */
 abstract class AbstractModule {
 	/**
+	 * Whether the module is initialized.
+	 *
+	 * @var bool
+	 */
+	protected bool $initialized = false;
+
+	/**
 	 * Initialize.
 	 *
 	 * @return void
 	 */
 	public function initialize(): void {
-		static $initialized;
-
-		if ( $this->is_active() && true !== $initialized ) {
+		if ( $this->is_active() && true !== $this->initialized ) {
 			$this->register_hooks();
 
-			$initialized = true;
+			$this->initialized = true;
 		}
 	}
 

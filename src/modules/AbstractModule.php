@@ -69,6 +69,19 @@ abstract class AbstractModule {
 	}
 
 	/**
+	 * Get the value of an option.
+	 *
+	 * @param string $option_name Option name.
+	 *
+	 * @return mixed
+	 */
+	protected function get_option( string $option_name ) {
+		$option_name = $this->get_settings_field_prefix() . $option_name;
+
+		return all_in_one_cleaner()->get_settings()->get( $option_name );
+	}
+
+	/**
 	 * Register settings fields.
 	 *
 	 * @param Settings $settings Settings.

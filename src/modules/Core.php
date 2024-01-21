@@ -216,8 +216,7 @@ EOQ;
 	 * @return string|false
 	 */
 	protected function clear_options( string $item ) {
-		$option_name = $this->get_settings_field_prefix() . 'clear_options';
-		if ( all_in_one_cleaner()->get_settings()->get( $option_name ) ) {
+		if ( true === $this->get_option( 'clear_options' ) ) {
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions
 			error_log( 'clear_options.' );
 		}
@@ -233,9 +232,7 @@ EOQ;
 	 * @return void
 	 */
 	public function task_post( int $post_id ): void {
-		$option_name = $this->get_settings_field_prefix() . 'delete_posts';
-
-		if ( all_in_one_cleaner()->get_settings()->get( $option_name ) ) {
+		if ( true === $this->get_option( 'delete_posts' ) ) {
 			// wp_delete_post( $post_id, true );
 		}
 	}
@@ -248,8 +245,7 @@ EOQ;
 	 * @return void
 	 */
 	public function task_page( int $post_id ): void {
-		$option_name = $this->get_settings_field_prefix() . 'delete_pages';
-		if ( all_in_one_cleaner()->get_settings()->get( $option_name ) ) {
+		if ( true === $this->get_option( 'delete_pages' ) ) {
 			// wp_delete_post( $post_id, true );
 		}
 	}

@@ -11,6 +11,7 @@ namespace all_in_one_cleaner;
 
 use all_in_one_cleaner\modules\AbstractModule;
 use all_in_one_cleaner\modules\Core;
+use all_in_one_cleaner\modules\WooCommerce;
 use all_in_one_cleaner\modules\WCSubscriptions;
 use all_in_one_cleaner\modules\WCVendors;
 
@@ -101,6 +102,7 @@ class AllInOneCleaner {
 		if ( is_null( $modules ) ) {
 			$modules = array(
 				'Core'            => new Core(),
+				'WooCommerce'     => new WooCommerce(),
 				'WCVendors'       => new WCVendors(),
 				'WCSubscriptions' => new WCSubscriptions(),
 			);

@@ -12,6 +12,7 @@ declare( strict_types=1 );
 namespace all_in_one_cleaner\modules;
 
 use all_in_one_cleaner\Settings;
+use Exception;
 
 /**
  * Class WooCommerce
@@ -82,8 +83,8 @@ class WooCommerce extends AbstractModule {
 	 * @return void
 	 */
 	public function task_product( int $product_id ): void {
-		if ( $this->get_option( 'delete_products' ) ) {
-			// wp_delete_post( $product_id, true );
+		if ( true === $this->get_option( 'delete_products' ) ) {
+			wp_delete_post( $product_id, true );
 		}
 	}
 
@@ -95,8 +96,8 @@ class WooCommerce extends AbstractModule {
 	 * @return void
 	 */
 	public function task_product_variation( int $product_variation_id ): void {
-		if ( $this->get_option( 'delete_products' ) ) {
-			// wp_delete_post( $product_variation_id, true );
+		if ( true === $this->get_option( 'delete_products' ) ) {
+			wp_delete_post( $product_variation_id, true );
 		}
 	}
 
@@ -106,10 +107,15 @@ class WooCommerce extends AbstractModule {
 	 * @param int $order_id Order ID.
 	 *
 	 * @return void
+	 * @throws Exception If customer ID not found.
 	 */
 	public function task_shop_order( int $order_id ): void {
-		if ( $this->get_option( 'delete_orders' ) ) {
-			// wp_delete_post( $order_id, true );
+		if ( user_can( $this->get_customer_id( $order_id ), 'manage_options' ) ) {
+			return;
+		}
+
+		if ( true === $this->get_option( 'delete_orders' ) ) {
+			wp_delete_post( $order_id, true );
 		}
 	}
 
@@ -119,21 +125,28 @@ class WooCommerce extends AbstractModule {
 	 * @param int $order_id Order ID.
 	 *
 	 * @return void
+	 * @throws Exception If customer ID not found.
 	 */
-	public function task_shop_order_refund( int $order_id ) {
-		if ( $this->get_option( 'delete_orders' ) ) {
-			// wp_delete_post( $order_id, true );
+	public function task_shop_order_refund( int $order_id ): void {
+		if ( user_can( $this->get_customer_id( $order_id ), 'manage_options' ) ) {
+			return;
+		}
+
+		if ( true === $this->get_option( 'delete_orders' ) ) {
+			wp_delete_post( $order_id, true );
 		}
 	}
 
 	/**
 	 * Executes the task for a shop coupon.
 	 *
+	 * @param int $coupon_id Coupon ID.
+	 *
 	 * @return void
 	 */
-	public function task_shop_coupon() {
-		if ( $this->get_option( 'delete_coupons' ) ) {
-			// wp_delete_post( $coupon_id, true );
+	public function task_shop_coupon( int $coupon_id ): void {
+		if ( true === $this->get_option( 'delete_coupons' ) ) {
+			wp_delete_post( $coupon_id, true );
 		}
 	}
 
@@ -142,57 +155,29 @@ class WooCommerce extends AbstractModule {
 	 *
 	 * @return void
 	 */
-	public function task_shop_customer() {
-		if ( $this->get_option( 'delete_customers' ) ) {
+	public function task_shop_customer(): void {
+		if ( true === $this->get_option( 'delete_customers' ) ) {
 			// @todo: Implement this.
+			// wp_delete_user( $user_id, $reassign );
 		}
 	}
 
 	/**
-	 * Executes the task for a shop order note.
+	 * Get customer ID by order ID.
 	 *
-	 * @return void
+	 * @param int $order_id Order ID.
+	 *
+	 * @return int
+	 *
+	 * @throws Exception If customer ID not found.
 	 */
-	public function task_shop_order_note() {
-		if ( ! $this->get_settings()->get( $this->get_settings_field_prefix() . 'delete_orders' ) ) {
-			return;
+	protected function get_customer_id( int $order_id ): int {
+		$customer_id = get_post_meta( $order_id, '_customer_user', true );
+
+		if ( false === $customer_id || '' === $customer_id ) {
+			throw new Exception( 'Customer ID not found.' );
 		}
 
-		global $wpdb;
-
-		$wpdb->query( "DELETE FROM {$wpdb->posts} WHERE post_type = 'shop_order_note'" );
-		$wpdb->query( "DELETE FROM {$wpdb->postmeta} WHERE post_id NOT IN (SELECT id FROM {$wpdb->posts})" );
-	}
-
-	/**
-	 * Executes the task for a shop web hook.
-	 *
-	 * @return void
-	 */
-	public function task_shop_webhook() {
-		if ( ! $this->get_settings()->get( $this->get_settings_field_prefix() . 'delete_orders' ) ) {
-			return;
-		}
-
-		global $wpdb;
-
-		$wpdb->query( "DELETE FROM {$wpdb->posts} WHERE post_type = 'shop_webhook'" );
-		$wpdb->query( "DELETE FROM {$wpdb->postmeta} WHERE post_id NOT IN (SELECT id FROM {$wpdb->posts})" );
-	}
-
-	/**
-	 * Executes the task for a shop web hook delivery.
-	 *
-	 * @return void
-	 */
-	public function task_shop_webhook_delivery() {
-		if ( ! $this->get_settings()->get( $this->get_settings_field_prefix() . 'delete_orders' ) ) {
-			return;
-		}
-
-		global $wpdb;
-
-		$wpdb->query( "DELETE FROM {$wpdb->posts} WHERE post_type = 'shop_webhook_delivery'" );
-		$wpdb->query( "DELETE FROM {$wpdb->postmeta} WHERE post_id NOT IN (SELECT id FROM {$wpdb->posts})" );
+		return (int) $customer_id;
 	}
 }

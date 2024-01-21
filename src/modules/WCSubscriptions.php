@@ -10,6 +10,7 @@ declare( strict_types=1 );
 namespace all_in_one_cleaner\modules;
 
 use all_in_one_cleaner\Settings;
+use Exception;
 
 /**
  * WooCommerce Subscriptions Module.
@@ -51,11 +52,6 @@ class WCSubscriptions extends AbstractModule {
 					$this->get_settings_field_prefix() . 'delete_subscriptions',
 					__( 'Delete subscriptions', 'all_in_one_cleaner' )
 				),
-				$settings->make_field(
-					'checkbox',
-					$this->get_settings_field_prefix() . 'delete_subscribers',
-					__( 'Delete subscribers', 'all_in_one_cleaner' )
-				),
 			)
 		);
 	}
@@ -66,23 +62,34 @@ class WCSubscriptions extends AbstractModule {
 	 * @param int $subscription_id Subscription ID.
 	 *
 	 * @return void
+	 * @throws Exception If customer ID not found.
 	 */
 	public function task_shop_subscription( int $subscription_id ): void {
-		if ( $this->get_option( 'delete_subscriptions' ) ) {
+		if ( user_can( $this->get_customer_id( $subscription_id ), 'manage_options' ) ) {
+			return;
+		}
+
+		if ( true === $this->get_option( 'delete_subscriptions' ) ) {
 			wp_delete_post( $subscription_id, true );
 		}
 	}
 
 	/**
-	 * Delete subscriber.
+	 * Get customer ID by order ID.
 	 *
-	 * @param int $subscriber_id Subscriber ID.
+	 * @param int $order_id Order ID.
 	 *
-	 * @return void
+	 * @return int
+	 *
+	 * @throws Exception If customer ID not found.
 	 */
-	public function task_subscriber( int $subscriber_id ): void {
-		if ( $this->get_option( 'delete_subscribers' ) ) {
-			// @todo: Implement this.
+	protected function get_customer_id( int $order_id ): int {
+		$customer_id = get_post_meta( $order_id, '_customer_user', true );
+
+		if ( false === $customer_id || '' === $customer_id ) {
+			throw new Exception( 'Customer ID not found.' );
 		}
+
+		return (int) $customer_id;
 	}
 }

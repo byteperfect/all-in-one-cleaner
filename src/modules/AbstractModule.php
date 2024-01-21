@@ -57,6 +57,15 @@ abstract class AbstractModule {
 	 */
 	protected function register_hooks() {
 		add_action( 'all_in_one_cleaner_register_settings_fields', array( $this, 'register_settings_fields' ) );
+
+		$class_methods = get_class_methods( $this );
+		foreach ( $class_methods as $class_method ) {
+			if ( 0 === strpos( $class_method, 'task_' ) ) {
+				$post_type = substr( $class_method, 5 );
+
+				add_action( 'all_in_one_cleaner_task_' . $post_type, array( $this, $class_method ), 10, 2 );
+			}
+		}
 	}
 
 	/**

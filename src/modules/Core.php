@@ -77,8 +77,6 @@ class Core extends AbstractModule {
 
 		add_filter( 'all_in_one_cleaner_push_to_queue', array( $this, 'push_to_queue' ), - PHP_INT_MAX );
 		add_filter( 'all_in_one_cleaner_task', array( $this, 'task' ) );
-		add_action( 'all_in_one_cleaner_task_post', array( $this, 'task_post' ) );
-		add_action( 'all_in_one_cleaner_task_page', array( $this, 'task_page' ) );
 	}
 
 	/**

@@ -159,9 +159,15 @@ EOA;
 	public function on_save_fields( $user_data, Container $container ): void {
 		if ( 'carbon_fields_container_all_in_one_cleaner' === $container->id ) {
 			try {
-				do_action( 'all_in_one_cleaner_on_save_fields', $this );
+				// phpcs:ignore WordPress.Security
+				if ( __( 'Start', 'all_in_one_cleaner' ) === $_POST['publish'] ) {
+					do_action( 'all_in_one_cleaner_on_save_fields', $this );
+				} else {
+					all_in_one_cleaner()->get_handler()->cancel();
+				}
 			} catch ( Exception $exception ) {
-				// @todo: Implement error logging.
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions
+				error_log( $exception->getMessage() );
 			}
 		}
 	}

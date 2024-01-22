@@ -13,6 +13,7 @@ use Carbon_Fields\Carbon_Fields;
 use Carbon_Fields\Container\Container;
 use Carbon_Fields\Field\Field;
 use Exception;
+use function all_in_one_cleaner;
 
 /**
  * Class Settings.
@@ -94,7 +95,11 @@ EOA;
 	 * @return string
 	 */
 	public function set_button_label(): string {
-		return __( 'Clear', 'all_in_one_cleaner' );
+		if ( all_in_one_cleaner()->get_handler()->is_active() ) {
+			return __( 'Stop', 'all_in_one_cleaner' );
+		} else {
+			return __( 'Start', 'all_in_one_cleaner' );
+		}
 	}
 
 	/**

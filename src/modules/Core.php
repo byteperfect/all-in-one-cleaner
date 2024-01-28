@@ -61,6 +61,11 @@ class Core extends AbstractModule {
 				),
 				$settings->make_field(
 					'checkbox',
+					$this->get_settings_field_prefix() . 'delete_orphaned_users',
+					__( 'Delete orphaned users', 'all_in_one_cleaner' )
+				),
+				$settings->make_field(
+					'checkbox',
 					$this->get_settings_field_prefix() . 'quick_deletion',
 					__( 'Perform a quick deletion', 'all_in_one_cleaner' )
 				),
@@ -76,7 +81,9 @@ class Core extends AbstractModule {
 	public function push_to_queue(): array {
 		return array(
 			'posts',
-			'options',
+			'orphaned_posts',
+			'orphaned_meta',
+			'orphaned_users',
 		);
 	}
 
@@ -91,11 +98,13 @@ class Core extends AbstractModule {
 		if ( is_string( $item ) ) {
 			if ( str_starts_with( $item, 'posts' ) ) {
 				$item = $this->clear_posts( $item );
-			} elseif ( str_starts_with( $item, 'options' ) ) {
-				$item = $this->clear_options( $item );
+			} elseif ( str_starts_with( $item, 'orphaned_posts' ) ) {
+				$item = $this->clear_orphaned_posts( $item );
+			} elseif ( str_starts_with( $item, 'orphaned_meta' ) ) {
+				$item = $this->clear_orphaned_meta();
+			} elseif ( str_starts_with( $item, 'orphaned_users' ) ) {
+				$item = $this->clear_orphaned_users();
 			}
-		} else {
-			$item = false;
 		}
 
 		return $item;
@@ -111,18 +120,17 @@ class Core extends AbstractModule {
 	protected function clear_posts( string $item ) {
 		$post_id = (int) substr( $item, 5 );
 
-		$parent_post = $this->get_post( $post_id );
-		if ( ! isset( $parent_post->ID ) ) {
-			// phpcs:ignore WordPress.PHP.DevelopmentFunctions
-			error_log( 'No posts found.' );
+		$post = Utils::get_post( $post_id );
+		if ( ! isset( $post->ID ) ) {
+			all_in_one_cleaner()->log( 'No posts found.', __METHOD__ );
 
 			return false;
 		}
 
-		$child_posts = $this->get_child_posts( (int) $parent_post->ID );
+		$child_posts = Utils::get_child_posts( (int) $post->ID );
 		foreach ( $child_posts as $child_post ) {
 			try {
-				do_action( 'all_in_one_cleaner_task_' . $child_post->post_type, $child_post->ID, $parent_post );
+				do_action( 'all_in_one_cleaner_task_' . $child_post->post_type, (int) $child_post->ID, $post );
 			} catch ( Exception $exception ) {
 				all_in_one_cleaner()->log( $exception->getMessage(), __METHOD__ );
 
@@ -131,81 +139,63 @@ class Core extends AbstractModule {
 		}
 
 		try {
-			do_action( 'all_in_one_cleaner_task_' . $parent_post->post_type, $parent_post->ID );
+			do_action( 'all_in_one_cleaner_task_' . $post->post_type, (int) $post->ID, null );
 		} catch ( Exception $exception ) {
 			all_in_one_cleaner()->log( $exception->getMessage(), __METHOD__ );
 
 			return false;
 		}
 
-		return 'posts' . $parent_post->ID;
+		return 'posts' . $post->ID;
 	}
 
 	/**
-	 * Get post.
-	 *
-	 * @param int $post_id ID of the previously processed post.
-	 *
-	 * @return object
-	 */
-	protected function get_post( int $post_id ): object {
-		global $wpdb;
-
-		if ( 0 === $post_id ) {
-			$query = <<<EOQ
-SELECT ID, post_type
-FROM $wpdb->posts
-WHERE post_parent = 0
-ORDER BY ID DESC
-LIMIT 1;
-EOQ;
-		} else {
-			$query = <<<EOQ
-SELECT ID, post_type
-FROM $wpdb->posts
-WHERE post_parent = 0 AND ID < $post_id
-ORDER BY ID DESC
-LIMIT 1;
-EOQ;
-		}
-
-		// phpcs:ignore WordPress.DB
-		return (object) $wpdb->get_row( $query );
-	}
-
-	/**
-	 * Get child posts.
-	 *
-	 * @param int $parent_post_id Parent post ID.
-	 *
-	 * @return stdClass[]
-	 */
-	protected function get_child_posts( int $parent_post_id ): array {
-		global $wpdb;
-
-		// phpcs:ignore WordPress.DB
-		$query = <<<EOQ
-SELECT ID, post_type
-FROM $wpdb->posts
-WHERE post_parent = $parent_post_id
-ORDER BY ID DESC;
-EOQ;
-
-		// phpcs:ignore WordPress.DB
-		return (array) $wpdb->get_results( $query );
-	}
-
-	/**
-	 * Clear options.
+	 * Clear orphaned posts.
 	 *
 	 * @param string $item Queue item to iterate over.
 	 *
 	 * @return string|false
 	 */
-	protected function clear_options( string $item ) {
-		if ( true === $this->get_option( 'clear_options' ) ) {
-			// phpcs:ignore WordPress.PHP.DevelopmentFunctions
-			error_log( 'clear_options.' );
+	protected function clear_orphaned_posts( string $item ) {
+		$post_id = (int) substr( $item, 14 );
+
+		$orphaned_post = Utils::get_orphaned_post( $post_id );
+		if ( ! isset( $orphaned_post->ID ) ) {
+			all_in_one_cleaner()->log( 'No posts found.', __METHOD__ );
+
+			return false;
+		}
+
+		try {
+			do_action( 'all_in_one_cleaner_task_' . $orphaned_post->post_type, (int) $orphaned_post->ID, (int) $orphaned_post->post_parent );
+		} catch ( Exception $exception ) {
+			all_in_one_cleaner()->log( $exception->getMessage(), __METHOD__ );
+
+			return false;
+		}
+
+		return 'orphaned_posts' . $orphaned_post->ID;
+	}
+
+	/**
+	 * Clear orphaned meta.
+	 *
+	 * @return false
+	 */
+	protected function clear_orphaned_meta(): bool {
+		Utils::delete_orphaned_meta();
+
+		return false;
+	}
+
+	/**
+	 * Clear orphaned users.
+	 *
+	 * @return false
+	 */
+	protected function clear_orphaned_users(): bool {
+		if ( true === $this->get_option( 'delete_orphaned_users' ) ) {
+			Utils::delete_orphaned_users();
 		}
 
 		return false;
@@ -233,6 +223,19 @@ EOQ;
 	 */
 	public function task_page( int $post_id ): void {
 		if ( true === $this->get_option( 'delete_pages' ) ) {
+			$this->delete_post( $post_id );
+		}
+	}
+
+	/**
+	 * Delete post.
+	 *
+	 * @param int $post_id Post ID.
+	 *
+	 * @return void
+	 */
+	public function task_revision( int $post_id ): void {
+		if ( true === $this->get_option( 'delete_revisions' ) ) {
 			$this->delete_post( $post_id );
 		}
 	}

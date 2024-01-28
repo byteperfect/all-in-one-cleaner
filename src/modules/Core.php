@@ -135,8 +135,7 @@ class Core extends AbstractModule {
 			try {
 				do_action( 'all_in_one_cleaner_task_' . $child_post->post_type, $child_post->ID, $parent_post );
 			} catch ( Exception $exception ) {
-				// phpcs:ignore WordPress.PHP.DevelopmentFunctions
-				error_log( $exception->getMessage() );
+				all_in_one_cleaner()->log( $exception->getMessage(), __METHOD__ );
 
 				break;
 			}
@@ -145,8 +144,7 @@ class Core extends AbstractModule {
 		try {
 			do_action( 'all_in_one_cleaner_task_' . $parent_post->post_type, $parent_post->ID );
 		} catch ( Exception $exception ) {
-			// phpcs:ignore WordPress.PHP.DevelopmentFunctions
-			error_log( $exception->getMessage() );
+			all_in_one_cleaner()->log( $exception->getMessage(), __METHOD__ );
 
 			return false;
 		}

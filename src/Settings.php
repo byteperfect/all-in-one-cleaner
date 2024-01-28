@@ -166,8 +166,7 @@ EOA;
 					all_in_one_cleaner()->get_handler()->cancel();
 				}
 			} catch ( Exception $exception ) {
-				// phpcs:ignore WordPress.PHP.DevelopmentFunctions
-				error_log( $exception->getMessage() );
+				all_in_one_cleaner()->log( $exception->getMessage() );
 			}
 		}
 	}

@@ -41,8 +41,7 @@ class AllInOneCleanerHandler extends WPBackgroundProcess {
 		try {
 			$item = apply_filters( 'all_in_one_cleaner_task', $item );
 		} catch ( Exception $exception ) {
-			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-			error_log( $exception->getMessage() );
+			all_in_one_cleaner()->log( $exception->getMessage() );
 
 			$item = false;
 		}

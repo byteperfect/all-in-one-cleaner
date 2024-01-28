@@ -10,8 +10,9 @@ declare( strict_types=1 );
 namespace all_in_one_cleaner\modules;
 
 use all_in_one_cleaner\Settings;
+use all_in_one_cleaner\Utils;
 use Exception;
-use stdClass;
+use WP_Post;
 
 /**
  * Core Module.
@@ -60,8 +61,8 @@ class Core extends AbstractModule {
 				),
 				$settings->make_field(
 					'checkbox',
-					$this->get_settings_field_prefix() . 'clear_options',
-					__( 'Clear options', 'all_in_one_cleaner' )
+					$this->get_settings_field_prefix() . 'quick_deletion',
+					__( 'Perform a quick deletion', 'all_in_one_cleaner' )
 				),
 			)
 		);
@@ -231,7 +232,7 @@ EOQ;
 	 */
 	public function task_post( int $post_id ): void {
 		if ( true === $this->get_option( 'delete_posts' ) ) {
-			// wp_delete_post( $post_id, true );
+			$this->delete_post( $post_id );
 		}
 	}
 
@@ -244,7 +245,18 @@ EOQ;
 	 */
 	public function task_page( int $post_id ): void {
 		if ( true === $this->get_option( 'delete_pages' ) ) {
-			// wp_delete_post( $post_id, true );
+			$this->delete_post( $post_id );
 		}
+	}
+
+	/**
+	 * Check if the post can be deleted.
+	 *
+	 * @param WP_Post $post Post.
+	 *
+	 * @return bool
+	 */
+	protected function can_be_deleted( WP_Post $post ): bool {
+		return true;
 	}
 }

@@ -10,6 +10,8 @@ declare( strict_types=1 );
 namespace all_in_one_cleaner\modules;
 
 use all_in_one_cleaner\Settings;
+use all_in_one_cleaner\Utils;
+use WP_Post;
 
 /**
  * Abstract Module.
@@ -82,6 +84,34 @@ abstract class AbstractModule {
 	}
 
 	/**
+	 * Deletes the given post.
+	 *
+	 * This method permanently deletes the specified post based on the post ID.
+	 * If the 'all_in_one_cleaner_quick_deletion' filter returns true, it uses the Utils::delete_post method
+	 * for deletion. Otherwise, it uses the WordPress function wp_delete_post.
+	 *
+	 * @param int $post_id The ID of the post to be deleted.
+	 *
+	 * @return void
+	 */
+	protected function delete_post( int $post_id ): void {
+		$post = get_post( $post_id );
+		if ( ! $post instanceof WP_Post ) {
+			return;
+		}
+
+		if ( ! $this->can_be_deleted( $post ) ) {
+			return;
+		}
+
+		if ( apply_filters( 'all_in_one_cleaner_quick_deletion', true ) ) {
+			Utils::delete_post( $post_id );
+		} else {
+			wp_delete_post( $post_id, true );
+		}
+	}
+
+	/**
 	 * Register settings fields.
 	 *
 	 * @param Settings $settings Settings.
@@ -103,4 +133,13 @@ abstract class AbstractModule {
 	 * @return string
 	 */
 	abstract protected function get_settings_field_prefix(): string;
+
+	/**
+	 * Check if the post can be deleted.
+	 *
+	 * @param WP_Post $post Post.
+	 *
+	 * @return bool
+	 */
+	abstract protected function can_be_deleted( WP_Post $post ): bool;
 }

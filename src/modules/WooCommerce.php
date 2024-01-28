@@ -12,7 +12,8 @@ declare( strict_types=1 );
 namespace all_in_one_cleaner\modules;
 
 use all_in_one_cleaner\Settings;
-use Exception;
+use all_in_one_cleaner\Utils;
+use WP_Post;
 
 /**
  * Class WooCommerce
@@ -84,7 +85,7 @@ class WooCommerce extends AbstractModule {
 	 */
 	public function task_product( int $product_id ): void {
 		if ( true === $this->get_option( 'delete_products' ) ) {
-			wp_delete_post( $product_id, true );
+			$this->delete_post( $product_id );
 		}
 	}
 
@@ -97,7 +98,7 @@ class WooCommerce extends AbstractModule {
 	 */
 	public function task_product_variation( int $product_variation_id ): void {
 		if ( true === $this->get_option( 'delete_products' ) ) {
-			wp_delete_post( $product_variation_id, true );
+			$this->delete_post( $product_variation_id );
 		}
 	}
 
@@ -107,15 +108,10 @@ class WooCommerce extends AbstractModule {
 	 * @param int $order_id Order ID.
 	 *
 	 * @return void
-	 * @throws Exception If customer ID not found.
 	 */
 	public function task_shop_order( int $order_id ): void {
-		if ( user_can( $this->get_customer_id( $order_id ), 'manage_options' ) ) {
-			return;
-		}
-
 		if ( true === $this->get_option( 'delete_orders' ) ) {
-			wp_delete_post( $order_id, true );
+			$this->delete_post( $order_id );
 		}
 	}
 
@@ -125,15 +121,10 @@ class WooCommerce extends AbstractModule {
 	 * @param int $order_id Order ID.
 	 *
 	 * @return void
-	 * @throws Exception If customer ID not found.
 	 */
 	public function task_shop_order_refund( int $order_id ): void {
-		if ( user_can( $this->get_customer_id( $order_id ), 'manage_options' ) ) {
-			return;
-		}
-
 		if ( true === $this->get_option( 'delete_orders' ) ) {
-			wp_delete_post( $order_id, true );
+			$this->delete_post( $order_id );
 		}
 	}
 
@@ -146,7 +137,7 @@ class WooCommerce extends AbstractModule {
 	 */
 	public function task_shop_coupon( int $coupon_id ): void {
 		if ( true === $this->get_option( 'delete_coupons' ) ) {
-			wp_delete_post( $coupon_id, true );
+			$this->delete_post( $coupon_id );
 		}
 	}
 
@@ -163,21 +154,31 @@ class WooCommerce extends AbstractModule {
 	}
 
 	/**
-	 * Get customer ID by order ID.
+	 * Check if the post can be deleted.
 	 *
-	 * @param int $order_id Order ID.
+	 * @param WP_Post $post Post.
 	 *
-	 * @return int
-	 *
-	 * @throws Exception If customer ID not found.
+	 * @return bool
 	 */
-	protected function get_customer_id( int $order_id ): int {
-		$customer_id = get_post_meta( $order_id, '_customer_user', true );
-
-		if ( false === $customer_id || '' === $customer_id ) {
-			throw new Exception( 'Customer ID not found.' );
+	public function can_be_deleted( WP_Post $post ): bool {
+		if ( Utils::is_orphaned_post( $post ) ) {
+			return true;
 		}
 
-		return (int) $customer_id;
+		$customer_id = get_post_meta( $post->ID, '_customer_user', true );
+
+		if ( in_array( $customer_id, array( false, '' ), true ) ) {
+			all_in_one_cleaner()->log(
+				'Customer ID not found.',
+				array(
+					'caller'   => __METHOD__,
+					'order_id' => $post->ID,
+				)
+			);
+
+			return true;
+		}
+
+		return ! user_can( $customer_id, 'manage_options' );
 	}
 }

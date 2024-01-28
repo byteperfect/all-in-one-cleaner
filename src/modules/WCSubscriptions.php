@@ -10,7 +10,8 @@ declare( strict_types=1 );
 namespace all_in_one_cleaner\modules;
 
 use all_in_one_cleaner\Settings;
-use Exception;
+use all_in_one_cleaner\Utils;
+use WP_Post;
 
 /**
  * WooCommerce Subscriptions Module.
@@ -62,34 +63,39 @@ class WCSubscriptions extends AbstractModule {
 	 * @param int $subscription_id Subscription ID.
 	 *
 	 * @return void
-	 * @throws Exception If customer ID not found.
 	 */
 	public function task_shop_subscription( int $subscription_id ): void {
-		if ( user_can( $this->get_customer_id( $subscription_id ), 'manage_options' ) ) {
-			return;
-		}
-
 		if ( true === $this->get_option( 'delete_subscriptions' ) ) {
-			wp_delete_post( $subscription_id, true );
+			$this->delete_post( $subscription_id );
 		}
 	}
 
 	/**
-	 * Get customer ID by order ID.
+	 * Check if the post can be deleted.
 	 *
-	 * @param int $order_id Order ID.
+	 * @param WP_Post $post Post.
 	 *
-	 * @return int
-	 *
-	 * @throws Exception If customer ID not found.
+	 * @return bool
 	 */
-	protected function get_customer_id( int $order_id ): int {
-		$customer_id = get_post_meta( $order_id, '_customer_user', true );
-
-		if ( false === $customer_id || '' === $customer_id ) {
-			throw new Exception( 'Customer ID not found.' );
+	public function can_be_deleted( WP_Post $post ): bool {
+		if ( Utils::is_orphaned_post( $post ) ) {
+			return true;
 		}
 
-		return (int) $customer_id;
+		$customer_id = get_post_meta( $post->ID, '_customer_user', true );
+
+		if ( in_array( $customer_id, array( false, '' ), true ) ) {
+			all_in_one_cleaner()->log(
+				'Customer ID not found.',
+				array(
+					'caller'   => __METHOD__,
+					'order_id' => $post->ID,
+				)
+			);
+
+			return true;
+		}
+
+		return ! user_can( $customer_id, 'manage_options' );
 	}
 }

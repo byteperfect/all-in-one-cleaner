@@ -67,6 +67,14 @@ abstract class AbstractModule {
 
 				add_action( 'all_in_one_cleaner_task_' . $post_type, array( $this, $class_method ), 10, 2 );
 			}
+
+			if ( 'push_to_queue' === $class_method ) {
+				add_action( 'all_in_one_cleaner_push_to_queue', array( $this, 'push_to_queue' ) );
+			}
+
+			if ( 'task' === $class_method ) {
+				add_filter( 'all_in_one_cleaner_task', array( $this, 'task' ) );
+			}
 		}
 	}
 

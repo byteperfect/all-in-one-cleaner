@@ -69,18 +69,6 @@ class Core extends AbstractModule {
 	}
 
 	/**
-	 * Register hooks.
-	 *
-	 * @return void
-	 */
-	protected function register_hooks() {
-		parent::register_hooks();
-
-		add_filter( 'all_in_one_cleaner_push_to_queue', array( $this, 'push_to_queue' ), - PHP_INT_MAX );
-		add_filter( 'all_in_one_cleaner_task', array( $this, 'task' ) );
-	}
-
-	/**
 	 * Set handler queue.
 	 *
 	 * @return string[]

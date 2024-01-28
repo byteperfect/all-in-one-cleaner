@@ -143,4 +143,22 @@ class AllInOneCleaner {
 			error_log( 'The cleaner has not been dispatched because the queue is empty.' );
 		}
 	}
+
+	/**
+	 * Logs a message and optional data.
+	 *
+	 * This method logs a message and optional data to the PHP error log.
+	 *
+	 * @param string $message The message to log.
+	 * @param mixed  $data    Optional data to log. Default is null.
+	 *
+	 * @return void
+	 */
+	public function log( string $message, $data = null ): void {
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions
+		$message .= PHP_EOL . print_r( $data, true );
+
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions
+		error_log( $message );
+	}
 }

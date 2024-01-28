@@ -67,11 +67,6 @@ class WooCommerce extends AbstractModule {
 					$this->get_settings_field_prefix() . 'delete_coupons',
 					__( 'Delete coupons', 'all_in_one_cleaner' )
 				),
-				$settings->make_field(
-					'checkbox',
-					$this->get_settings_field_prefix() . 'delete_customers',
-					__( 'Delete customers', 'all_in_one_cleaner' )
-				),
 			)
 		);
 	}
@@ -138,18 +133,6 @@ class WooCommerce extends AbstractModule {
 	public function task_shop_coupon( int $coupon_id ): void {
 		if ( true === $this->get_option( 'delete_coupons' ) ) {
 			$this->delete_post( $coupon_id );
-		}
-	}
-
-	/**
-	 * Executes the task for a shop customer.
-	 *
-	 * @return void
-	 */
-	public function task_shop_customer(): void {
-		if ( true === $this->get_option( 'delete_customers' ) ) {
-			// @todo: Implement this.
-			// wp_delete_user( $user_id, $reassign );
 		}
 	}
 

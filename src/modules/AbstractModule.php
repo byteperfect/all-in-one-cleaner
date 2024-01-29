@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace all_in_one_cleaner\modules;
 
+use all_in_one_cleaner\interfaces\Module;
 use all_in_one_cleaner\Settings;
 use all_in_one_cleaner\Utils;
 use WP_Post;
@@ -18,7 +19,7 @@ use WP_Post;
  *
  * @package all_in_one_cleaner
  */
-abstract class AbstractModule {
+abstract class AbstractModule implements Module {
 	/**
 	 * Whether the module is initialized.
 	 *

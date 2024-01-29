@@ -9,7 +9,7 @@ declare( strict_types=1 );
 
 namespace all_in_one_cleaner;
 
-use all_in_one_cleaner\modules\AbstractModule;
+use all_in_one_cleaner\interfaces\Module;
 use all_in_one_cleaner\modules\Core;
 use all_in_one_cleaner\modules\WooCommerce;
 use all_in_one_cleaner\modules\WCSubscriptions;
@@ -94,7 +94,7 @@ class AllInOneCleaner {
 	/**
 	 * Get list modules.
 	 *
-	 * @return array<AbstractModule>
+	 * @return array<Module>
 	 */
 	public function get_modules(): array {
 		static $modules;

@@ -26,7 +26,7 @@ class AllInOneCleaner {
 	 *
 	 * @var bool
 	 */
-	protected bool $initialized = false;
+	protected bool $initialized;
 
 	/**
 	 * Get instance of AllInOneCleaner.
@@ -39,11 +39,18 @@ class AllInOneCleaner {
 		// Instantiate only once.
 		if ( is_null( $instance ) ) {
 			$instance = new AllInOneCleaner();
-
-			$instance->initialize();
 		}
 
 		return $instance;
+	}
+
+	/**
+	 * AllInOneCleaner constructor.
+	 */
+	private function __construct() {
+		$this->initialized = false;
+
+		$this->register_hooks();
 	}
 
 	/**
@@ -51,10 +58,8 @@ class AllInOneCleaner {
 	 *
 	 * @return void
 	 */
-	protected function initialize(): void {
+	public function initialize(): void {
 		if ( true !== $this->initialized ) {
-			$this->register_hooks();
-
 			$this->get_settings()->initialize();
 
 			foreach ( $this->get_modules() as $module ) {
@@ -73,6 +78,7 @@ class AllInOneCleaner {
 	 * @return void
 	 */
 	protected function register_hooks() {
+		add_action( 'plugins_loaded', array( $this, 'initialize' ) );
 		add_action( 'all_in_one_cleaner_on_save_fields', array( $this, 'dispatch_cleaner' ) );
 	}
 

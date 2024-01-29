@@ -11,9 +11,6 @@ namespace all_in_one_cleaner;
 
 use all_in_one_cleaner\interfaces\Module;
 use all_in_one_cleaner\modules\Core;
-use all_in_one_cleaner\modules\WooCommerce;
-use all_in_one_cleaner\modules\WCSubscriptions;
-use all_in_one_cleaner\modules\WCVendors;
 
 /**
  * Class AllInOneCleaner.
@@ -27,6 +24,13 @@ class AllInOneCleaner {
 	 * @var bool
 	 */
 	protected bool $initialized;
+
+	/**
+	 * Modules.
+	 *
+	 * @var array<Module>
+	 */
+	protected array $modules;
 
 	/**
 	 * Get instance of AllInOneCleaner.
@@ -49,6 +53,7 @@ class AllInOneCleaner {
 	 */
 	private function __construct() {
 		$this->initialized = false;
+		$this->modules     = array();
 
 		$this->register_hooks();
 	}
@@ -103,18 +108,16 @@ class AllInOneCleaner {
 	 * @return array<Module>
 	 */
 	public function get_modules(): array {
-		static $modules;
-
-		if ( is_null( $modules ) ) {
-			$modules = array(
-				'Core'            => new Core(),
-				'WooCommerce'     => new WooCommerce(),
-				'WCVendors'       => new WCVendors(),
-				'WCSubscriptions' => new WCSubscriptions(),
+		if ( 0 === count( $this->modules ) ) {
+			$this->modules = apply_filters(
+				'all_in_one_cleaner_modules',
+				array(
+					'Core' => new Core(),
+				)
 			);
 		}
 
-		return $modules;
+		return $this->modules;
 	}
 
 	/**

@@ -14,11 +14,4 @@ interface Module {
 	 * @return void
 	 */
 	public function initialize(): void;
-
-	/**
-	 * Get the slug of the module.
-	 *
-	 * @return string
-	 */
-	public function get_module_slug(): string;
 }

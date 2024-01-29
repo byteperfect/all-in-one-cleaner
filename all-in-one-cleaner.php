@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       All-In-One Cleaner.
+ * Plugin Name:       All-In-One Cleaner
  * Plugin URI:        https://wordpress.org/plugins/all-in-one-cleaner/
  * Description:       The plugin allows you to clean up your WordPress site.
  * Version:           0.1.0

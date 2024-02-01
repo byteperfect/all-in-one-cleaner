@@ -21,6 +21,13 @@ use WP_Post;
  */
 abstract class AbstractModule implements Module {
 	/**
+	 * Module name.
+	 *
+	 * @var string
+	 */
+	protected string $module_name;
+
+	/**
 	 * Whether the module is initialized.
 	 *
 	 * @var bool
@@ -121,6 +128,21 @@ abstract class AbstractModule implements Module {
 	}
 
 	/**
+	 * Show notice that the handler is not compatible with the module.
+	 *
+	 * @return void
+	 */
+	public function handler_is_not_compatible_notice(): void {
+		$message = sprintf(
+		/* translators: %s: module name */
+			__( 'The "%s" module will not be activated due to a version mismatch between the handler and the main module. Please update the add-on.', 'all_in_one_cleaner' ),
+			$this->module_name
+		);
+
+		echo '<div class="error"><p>' . esc_html( $message ) . '</p></div>';
+	}
+
+	/**
 	 * Register settings fields.
 	 *
 	 * @param Settings $settings Settings.
@@ -151,4 +173,11 @@ abstract class AbstractModule implements Module {
 	 * @return bool
 	 */
 	abstract protected function can_be_deleted( WP_Post $post ): bool;
+
+	/**
+	 * Get the version of supported handler.
+	 *
+	 * @return int
+	 */
+	abstract public function get_handler_version(): int;
 }

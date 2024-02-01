@@ -48,4 +48,13 @@ class AllInOneCleanerHandler extends WPBackgroundProcess {
 
 		return $item;
 	}
+
+	/**
+	 * Get the version of the handler.
+	 *
+	 * @return int
+	 */
+	public function get_handler_version(): int {
+		return 1;
+	}
 }

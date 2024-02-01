@@ -67,11 +67,26 @@ class AllInOneCleaner {
 		if ( true !== $this->initialized ) {
 			$this->get_settings()->initialize();
 
+			$handler = $this->get_handler();
+
 			foreach ( $this->get_modules() as $module ) {
+				if ( $handler->get_handler_version() !== $module->get_handler_version() ) {
+					$this->log(
+						__( 'The module is not compatible with the current version of the handler.', 'all_in_one_cleaner' ),
+						array(
+							'Module name'     => get_class( $module ),
+							'Handler version' => $handler->get_handler_version(),
+							'Module version'  => $module->get_handler_version(),
+						)
+					);
+
+					add_action( 'admin_notices', array( $module, 'handler_is_not_compatible_notice' ) );
+
+					continue;
+				}
+
 				$module->initialize();
 			}
-
-			$this->get_handler();
 
 			$this->initialized = true;
 		}

@@ -21,6 +21,13 @@ use WP_Post;
  */
 class Core extends AbstractModule {
 	/**
+	 * Module name.
+	 *
+	 * @var string
+	 */
+	protected string $module_name = 'Core';
+
+	/**
 	 * Get the slug of the plugin for which the module is registered.
 	 *
 	 * @return string
@@ -249,5 +256,14 @@ class Core extends AbstractModule {
 	 */
 	protected function can_be_deleted( WP_Post $post ): bool {
 		return true;
+	}
+
+	/**
+	 * Get the version of supported handler.
+	 *
+	 * @return int
+	 */
+	public function get_handler_version(): int {
+		return 1;
 	}
 }
